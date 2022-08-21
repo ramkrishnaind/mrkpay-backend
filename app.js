@@ -5,6 +5,7 @@ const app = express();
 const cors = require("cors");
 const postsRouter = require("./routers/postsRouter");
 const foreversPostsRouter = require("./routers/foreversPostsRouter");
+const postCategoryRouter = require("./routers/postCategoryRouter");
 const mutagesRouter = require("./routers/mutagesRouter");
 const usersRouter = require("./routers/usersRouter");
 const adminRouter = require("./routers/adminRouter");
@@ -19,6 +20,7 @@ app.route("/").get((req, res) => {
 });
 app.use("/posts", postsRouter);
 app.use("/foreversPosts", foreversPostsRouter);
+app.use("/postCategories", postCategoryRouter);
 app.use("/mutages", mutagesRouter);
 app.use("/users", usersRouter);
 app.use("/xadmin", adminRouter);

@@ -27,12 +27,13 @@ async function addPost(req, res) {
   if (allPosts.length > 0) {
     lastPostId = allPosts[allPosts.length - 1].id;
   }
-  const { title, details, author, imgUrl } = req.body;
+  const { title, details, author, imgUrl, categories } = req.body;
   const post = {
     title,
     details,
     author,
     imgUrl,
+    categories,
     createdAt: currentdate.toISOString(),
   };
   const document = await setDoc(
