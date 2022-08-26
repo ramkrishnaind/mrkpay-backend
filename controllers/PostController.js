@@ -23,7 +23,7 @@ async function getAllPosts(req, res) {
 
 async function addPost(req, res) {
   const allPosts = await fetchPosts();
-  const lastPostId = allPosts[allPosts.length - 1].id;
+  const lastPostId = allPosts[allPosts?.length - 1].id;
   const { title, details, author, imgUrl } = req.body;
   const post = {
     title,

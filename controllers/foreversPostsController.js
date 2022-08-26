@@ -1,5 +1,6 @@
 const {
   doc,
+  addDoc,
   setDoc,
   getDocs,
   collection,
@@ -50,7 +51,7 @@ async function getCategoryPosts(req, res) {
       // console.log("postCategories", postCategories);
       if (
         postCategories &&
-        postCategories.length > 0 &&
+        postCategories?.length > 0 &&
         postCategories.includes(category.trim())
       ) {
         postsCat.push(post.data);
@@ -79,8 +80,8 @@ async function getAllCategories(req, res) {
 async function addPost(req, res) {
   const allPosts = await fetchPosts();
   let lastPostId = 0;
-  if (allPosts.length > 0) {
-    lastPostId = allPosts[allPosts.length - 1].id;
+  if (allPosts?.length > 0) {
+    lastPostId = allPosts[allPosts?.length - 1].id;
   }
   const { title, details, author, imgUrl, categories } = req.body;
   const post = {
@@ -91,10 +92,7 @@ async function addPost(req, res) {
     categories,
     createdAt: currentdate.toISOString(),
   };
-  const document = await setDoc(
-    doc(db, "foreversPosts", (parseInt(lastPostId) + 1).toString()),
-    post
-  );
+  const document = await addDoc(collection(db, "foreversPosts"), post);
   res.json({ status: "success", data: document });
 }
 async function deletePost(req, res) {

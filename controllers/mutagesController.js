@@ -50,7 +50,7 @@ async function incrementViews(req, res) {
   const docRef = doc(db, "mutages", encryptedhash);
   const snapShot = await getDoc(docRef);
   let targetDoc = snapShot.data();
-  if (Object.keys(targetDoc).length > 0) {
+  if (Object.keys(targetDoc)?.length > 0) {
     targetDoc.views++;
     targetDoc.uniqueIps.push(req.ip);
     await setDoc(docRef, targetDoc);

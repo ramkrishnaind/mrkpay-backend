@@ -25,7 +25,7 @@ async function addPostCategory(req, res) {
   const allPosts = await fetchPostCategories();
   let lastPostId = 0;
   if (allPosts.length > 0) {
-    lastPostId = allPosts[allPosts.length - 1].id;
+    lastPostId = allPosts[allPosts?.length - 1].id;
   }
   const { name } = req.body;
   const post = {
