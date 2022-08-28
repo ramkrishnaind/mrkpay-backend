@@ -9,7 +9,7 @@ const { db } = require(`${__dirname}/../firebase/config.js`);
 const currentdate = new Date();
 
 async function fetchPostCategories() {
-  const snapshot = await getDocs(collection(db, "postCategories"));
+  const snapshot = await getDocs(collection(db, "foreversPostCategories"));
   const postCategories = snapshot.docs.map((doc) => {
     return { data: doc.data(), id: doc.id };
   });
@@ -33,7 +33,7 @@ async function addPostCategory(req, res) {
     createdAt: currentdate.toISOString(),
   };
   const document = await setDoc(
-    doc(db, "postCategories", (parseInt(lastPostId) + 1).toString()),
+    doc(db, "foreversPostCategories", (parseInt(lastPostId) + 1).toString()),
     post
   );
   res.json({ status: "success", data: document });
@@ -41,7 +41,7 @@ async function addPostCategory(req, res) {
 async function deletePostCatgory(req, res) {
   const { id } = req.body;
   try {
-    const docRef = doc(db, "postCategories", id);
+    const docRef = doc(db, "foreversPostCategories", id);
     await deleteDoc(docRef);
     res.json({ status: "success" });
   } catch (e) {

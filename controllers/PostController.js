@@ -1,21 +1,72 @@
 const {
   doc,
-  setDoc,
   getDocs,
   collection,
   deleteDoc,
+  addDoc,
+  query,
+  orderBy,
 } = require("firebase/firestore");
 const { db } = require(`${__dirname}/../firebase/config.js`);
 const currentdate = new Date();
 
 async function fetchPosts() {
-  const snapshot = await getDocs(collection(db, "posts"));
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
   const posts = snapshot.docs.map((doc) => {
     return { data: doc.data(), id: doc.id };
   });
   return posts;
 }
+async function getCategoryPosts(req, res) {
+  const posts = await fetchPosts();
+  const categoryPosts = {};
+  const categories = [];
+  posts.forEach((post) => {
+    const postCategories = post?.data?.categories;
+    // console.log("post", post);
+    if (postCategories) {
+      postCategories.forEach((postCategory) => {
+        if (!categories.includes(postCategory)) categories.push(postCategory);
+      });
+    }
+  });
+  console.log("categories", categories);
+  categories.forEach((category) => {
+    const postsCat = [];
+    posts.forEach((post) => {
+      // console.log("post", post);
+      // console.log("category", category);
+      const postCategories = post?.data?.categories;
+      // console.log("postCategories", postCategories);
+      if (
+        postCategories &&
+        postCategories?.length > 0 &&
+        postCategories.includes(category.trim())
+      ) {
+        postsCat.push(post.data);
+      }
+    });
+    // console.log("posts", posts);
+    categoryPosts[category] = [...postsCat];
+  });
 
+  res.json({ status: "success", data: categoryPosts });
+}
+async function getAllCategories(req, res) {
+  const posts = await fetchPosts();
+  const categories = [];
+  posts.forEach((post) => {
+    const postCategories = post?.data?.categories;
+    // console.log("post", post);
+    if (postCategories) {
+      postCategories.forEach((postCategory) => {
+        if (!categories.includes(postCategory)) categories.push(postCategory);
+      });
+    }
+  });
+  res.json({ status: "success", data: categories });
+}
 async function getAllPosts(req, res) {
   const posts = await fetchPosts();
   res.json({ status: "success", data: posts });
@@ -23,19 +74,20 @@ async function getAllPosts(req, res) {
 
 async function addPost(req, res) {
   const allPosts = await fetchPosts();
-  const lastPostId = allPosts[allPosts?.length - 1].id;
-  const { title, details, author, imgUrl } = req.body;
+  let lastPostId = 0;
+  if (allPosts?.length > 0) {
+    lastPostId = allPosts[allPosts?.length - 1].id;
+  }
+  const { title, details, author, imgUrl, categories } = req.body;
   const post = {
     title,
     details,
     author,
     imgUrl,
+    categories,
     createdAt: currentdate.toISOString(),
   };
-  const document = await setDoc(
-    doc(db, "posts", (parseInt(lastPostId) + 1).toString()),
-    post
-  );
+  const document = await addDoc(collection(db, "posts"), post);
   res.json({ status: "success", data: document });
 }
 async function deletePost(req, res) {
@@ -48,4 +100,10 @@ async function deletePost(req, res) {
     res.json({ status: "error" });
   }
 }
-module.exports = { getAllPosts, addPost, deletePost };
+module.exports = {
+  getAllPosts,
+  getCategoryPosts,
+  getAllCategories,
+  addPost,
+  deletePost,
+};

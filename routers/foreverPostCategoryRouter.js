@@ -4,7 +4,7 @@ const {
   getAllPostCategories,
   addPostCategory,
   deletePostCatgory,
-} = require("../controllers/postCategoriesController");
+} = require("../controllers/foreversPostCategoriesController");
 postsRouter
   .route("/")
   .get(getAllPostCategories)
