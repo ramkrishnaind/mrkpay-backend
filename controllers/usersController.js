@@ -39,11 +39,13 @@ async function getUserById(req, res) {
 }
 async function addGeneratedCoin(req, res) {
   const { uid } = req.body;
+  console.log("uid", uid);
   let targetObj;
   try {
     const docRef = doc(db, "users", uid);
     const obj = await getDoc(docRef);
     targetObj = obj.data();
+    console.log("targetObj", obj);
     if (targetObj) {
       targetObj.coinsGenerated += 1;
       await setDoc(docRef, targetObj);
