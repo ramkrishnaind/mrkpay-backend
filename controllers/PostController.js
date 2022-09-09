@@ -9,14 +9,20 @@ const {
 } = require("firebase/firestore");
 const { db } = require(`${__dirname}/../firebase/config.js`);
 const currentdate = new Date();
-
+const { client } = require("../redis");
 async function fetchPosts() {
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
-  const posts = snapshot.docs.map((doc) => {
-    return { data: doc.data(), id: doc.id };
-  });
-  return posts;
+  const postMem = await client.get("posts");
+  if (postMem) {
+    return JSON.parse(postMem);
+  } else {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    const posts = snapshot.docs.map((doc) => {
+      return { data: doc.data(), id: doc.id };
+    });
+    client.set("posts", JSON.stringify(posts));
+    return posts;
+  }
 }
 async function getCategoryPosts(req, res) {
   const posts = await fetchPosts();
@@ -88,6 +94,19 @@ async function addPost(req, res) {
     createdAt: currentdate.toISOString(),
   };
   const document = await addDoc(collection(db, "posts"), post);
+  const catMem = await client.get("posts");
+  if (catMem) {
+    const prevCategories = JSON.parse(catMem);
+    prevCategories.push({ id: document.id, data: post });
+    client.set("posts", JSON.stringify(prevCategories));
+  } else {
+    const snapshot = await getDocs(collection(db, "posts"));
+    const prevCategories = snapshot.docs.map((doc) => {
+      return { data: doc.data(), id: doc.id };
+    });
+    // prevCategories.push({ id: document.id, data: post });
+    client.set("posts", JSON.stringify(prevCategories));
+  }
   res.json({ status: "success", data: document });
 }
 async function deletePost(req, res) {
@@ -95,6 +114,22 @@ async function deletePost(req, res) {
   try {
     const docRef = doc(db, "posts", id);
     await deleteDoc(docRef);
+    const catMem = await client.get("posts");
+    if (catMem) {
+      const prevCategories = JSON.parse(catMem);
+      // prevCategories.data.push();
+      client.set(
+        "posts",
+        JSON.stringify(prevCategories.filter((item) => item.id !== id))
+      );
+    } else {
+      const snapshot = await getDocs(collection(db, "posts"));
+      const prevCategories = snapshot.docs.map((doc) => {
+        return { data: doc.data(), id: doc.id };
+      });
+      // prevCategories.data.push();
+      client.set("posts", JSON.stringify(prevCategories));
+    }
     res.json({ status: "success" });
   } catch (e) {
     res.json({ status: "error" });

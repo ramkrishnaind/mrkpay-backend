@@ -6,14 +6,21 @@ const {
   deleteDoc,
 } = require("firebase/firestore");
 const { db } = require(`${__dirname}/../firebase/config.js`);
+const { client } = require("../redis");
 const currentdate = new Date();
 
 async function fetchPostCategories() {
-  const snapshot = await getDocs(collection(db, "foreversPostCategories"));
-  const postCategories = snapshot.docs.map((doc) => {
-    return { data: doc.data(), id: doc.id };
-  });
-  return postCategories;
+  const catMem = await client.get("foreversPostCategories");
+  if (catMem) {
+    return JSON.parse(catMem);
+  } else {
+    const snapshot = await getDocs(collection(db, "foreversPostCategories"));
+    const postCategories = snapshot.docs.map((doc) => {
+      return { data: doc.data(), id: doc.id };
+    });
+    client.set("foreversPostCategories", JSON.stringify(postCategories));
+    return postCategories;
+  }
 }
 
 async function getAllPostCategories(req, res) {
@@ -36,6 +43,20 @@ async function addPostCategory(req, res) {
     doc(db, "foreversPostCategories", (parseInt(lastPostId) + 1).toString()),
     post
   );
+  const catMem = await client.get("foreversPostCategories");
+  if (catMem) {
+    const prevCategories = JSON.parse(catMem);
+    prevCategories.push({ id: document.id, data: post });
+    client.set("foreversPostCategories", JSON.stringify(prevCategories));
+  } else {
+    const snapshot = await getDocs(collection(db, "foreversPostCategories"));
+    const prevCategories = snapshot.docs.map((doc) => {
+      return { data: doc.data(), id: doc.id };
+    });
+    prevCategories.push();
+    client.set("foreversPostCategories", JSON.stringify(prevCategories));
+  }
+
   res.json({ status: "success", data: document });
 }
 async function deletePostCatgory(req, res) {
@@ -43,6 +64,22 @@ async function deletePostCatgory(req, res) {
   try {
     const docRef = doc(db, "foreversPostCategories", id);
     await deleteDoc(docRef);
+    const catMem = await client.get("foreversPostCategories");
+    if (catMem) {
+      const prevCategories = JSON.parse(catMem);
+      // prevCategories.data.push();
+      client.set(
+        "foreversPostCategories",
+        JSON.stringify(prevCategories.filter((item) => item.id !== id))
+      );
+    } else {
+      const snapshot = await getDocs(collection(db, "foreversPostCategories"));
+      const prevCategories = snapshot.docs.map((doc) => {
+        return { data: doc.data(), id: doc.id };
+      });
+      // prevCategories.data.push();
+      client.set("foreversPostCategories", JSON.stringify(prevCategories));
+    }
     res.json({ status: "success" });
   } catch (e) {
     res.json({ status: "error" });

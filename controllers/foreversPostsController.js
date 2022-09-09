@@ -8,20 +8,33 @@ const {
   orderBy,
   deleteDoc,
 } = require("firebase/firestore");
+// const redis = require("redis");
+// const client = redis.createClient();
+// client.on("connect", function () {
+//   console.log("Connected!");
+// });
+const { client } = require("../redis");
 const { db } = require(`${__dirname}/../firebase/config.js`);
 const currentdate = new Date();
 
 async function fetchPosts() {
   // const foreversPostsRef = collection(db, "foreversPosts");
-  const q = query(
-    collection(db, "foreversPosts"),
-    orderBy("createdAt", "desc")
-  );
-  const snapshot = await getDocs(q);
-  const posts = snapshot.docs.map((doc) => {
-    return { data: doc.data(), id: doc.id };
-  });
-  return posts;
+  // return new Promise((resolve, reject) => {
+  const postMem = await client.get("foreversPosts");
+  if (postMem) {
+    return JSON.parse(postMem);
+  } else {
+    const q = query(
+      collection(db, "foreversPosts"),
+      orderBy("createdAt", "desc")
+    );
+    const snapshot = await getDocs(q);
+    const posts = snapshot.docs.map((doc) => {
+      return { data: doc.data(), id: doc.id };
+    });
+    client.set("foreversPosts", JSON.stringify(posts));
+    return posts;
+  }
 }
 
 async function getAllPosts(req, res) {
@@ -93,6 +106,19 @@ async function addPost(req, res) {
     createdAt: currentdate.toISOString(),
   };
   const document = await addDoc(collection(db, "foreversPosts"), post);
+  const catMem = await client.get("foreversPosts");
+  if (catMem) {
+    const prevCategories = JSON.parse(catMem);
+    prevCategories.push({ id: document.id, data: post });
+    client.set("foreversPosts", JSON.stringify(prevCategories));
+  } else {
+    const snapshot = await getDocs(collection(db, "foreversPosts"));
+    const prevCategories = snapshot.docs.map((doc) => {
+      return { data: doc.data(), id: doc.id };
+    });
+    prevCategories.push({ id: document.id, data: post });
+    client.set("foreversPosts", JSON.stringify(prevCategories));
+  }
   res.json({ status: "success", data: document });
 }
 async function deletePost(req, res) {
@@ -100,6 +126,22 @@ async function deletePost(req, res) {
   try {
     const docRef = doc(db, "foreversPosts", id);
     await deleteDoc(docRef);
+    const catMem = await client.get("foreversPosts");
+    if (catMem) {
+      const prevCategories = JSON.parse(catMem);
+      // prevCategories.data.push();
+      client.set(
+        "foreversPosts",
+        JSON.stringify(prevCategories.filter((item) => item.id !== id))
+      );
+    } else {
+      const snapshot = await getDocs(collection(db, "foreversPosts"));
+      const prevCategories = snapshot.docs.map((doc) => {
+        return { data: doc.data(), id: doc.id };
+      });
+      // prevCategories.data.push();
+      client.set("foreversPosts", JSON.stringify(prevCategories));
+    }
     res.json({ status: "success" });
   } catch (e) {
     res.json({ status: "error" });

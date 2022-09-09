@@ -19,6 +19,11 @@ app.use(compression());
 app.route("/").get((req, res) => {
   res.send("Hello world");
 });
+
+require("dotenv").config();
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 app.use("/posts", postsRouter);
 app.use("/foreversPosts", foreversPostsRouter);
 app.use("/foreverPostCategories", foreverPostCategoryRouter);
