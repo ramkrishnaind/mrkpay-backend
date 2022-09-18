@@ -2,6 +2,7 @@ const {
   doc,
   getDoc,
   setDoc,
+  addDoc,
   getDocs,
   collection,
 } = require("firebase/firestore");
@@ -49,9 +50,19 @@ async function addGeneratedCoin(req, res) {
     if (targetObj) {
       targetObj.coinsGenerated += 1;
       await setDoc(docRef, targetObj);
+      const coinTransaction = {
+        createdBy: uid,
+        coinGenerated: 1,
+        createdAt: new Date().toISOString(),
+      };
+      const document = await addDoc(
+        collection(db, "coinTransaction"),
+        coinTransaction
+      );
       return res.json({ status: "success" });
     }
   } catch (e) {
+    console.log(e);
     return res.json({ status: "error" });
   }
   return res.json({ status: "error" });
