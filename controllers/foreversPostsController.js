@@ -22,21 +22,40 @@ async function fetchPosts() {
   // return new Promise((resolve, reject) => {
   const postMem = await client.get("foreversPosts");
   if (postMem) {
-    return JSON.parse(postMem);
+    const posts = JSON.parse(postMem);
+    posts.sort((a, b) => {
+      // debugger;
+      return (
+        new Date(b.data.createdAt).getTime() -
+        new Date(a.data.createdAt).getTime()
+      );
+      // if (
+      //   new Date(a.data.createdAt).getTime() <
+      //   new Date(b.data.createdAt).getTime()
+      // )
+      //   return -1;
+      // else if (
+      //   new Date(a.data.createdAt).getTime() ==
+      //   new Date(b.data.createdAt).getTime()
+      // )
+      //   return 0;
+      // else return 1;
+    });
+    return posts;
   } else {
     const q = query(
-      collection(db, "foreversPosts"),
-      orderBy("createdAt", "desc")
+      collection(db, "foreversPosts")
+      // orderBy("createdAt", "desc")
     );
     const snapshot = await getDocs(q);
     const posts = snapshot.docs.map((doc) => {
       return { data: doc.data(), id: doc.id };
     });
     posts.data.sort((a, b) => {
-      if (new Date(a.data.createdAt) < new Date(b.data.createdAt)) return -1;
-      else if (new Date(a.data.createdAt) == new Date(b.data.createdAt))
-        return 0;
-      else return 1;
+      return (
+        new Date(b.data.createdAt).getTime() -
+        new Date(a.data.createdAt).getTime()
+      );
     });
     client.set("foreversPosts", JSON.stringify(posts));
     return posts;

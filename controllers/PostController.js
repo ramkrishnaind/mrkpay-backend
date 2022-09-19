@@ -13,7 +13,26 @@ const { client } = require("../redis");
 async function fetchPosts() {
   const postMem = await client.get("posts");
   if (postMem) {
-    return JSON.parse(postMem);
+    const posts = JSON.parse(postMem);
+    posts.sort((a, b) => {
+      // debugger;
+      return (
+        new Date(b.data.createdAt).getTime() -
+        new Date(a.data.createdAt).getTime()
+      );
+      // if (
+      //   new Date(a.data.createdAt).getTime() <
+      //   new Date(b.data.createdAt).getTime()
+      // )
+      //   return -1;
+      // else if (
+      //   new Date(a.data.createdAt).getTime() ==
+      //   new Date(b.data.createdAt).getTime()
+      // )
+      //   return 0;
+      // else return 1;
+    });
+    return posts;
   } else {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
@@ -21,10 +40,10 @@ async function fetchPosts() {
       return { data: doc.data(), id: doc.id };
     });
     posts.data.sort((a, b) => {
-      if (new Date(a.data.createdAt) < new Date(b.data.createdAt)) return -1;
-      else if (new Date(a.data.createdAt) == new Date(b.data.createdAt))
-        return 0;
-      else return 1;
+      return (
+        new Date(b.data.createdAt).getTime() -
+        new Date(a.data.createdAt).getTime()
+      );
     });
     client.set("posts", JSON.stringify(posts));
     return posts;
