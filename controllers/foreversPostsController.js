@@ -32,6 +32,12 @@ async function fetchPosts() {
     const posts = snapshot.docs.map((doc) => {
       return { data: doc.data(), id: doc.id };
     });
+    posts.data.sort((a, b) => {
+      if (new Date(a.data.createdAt) < new Date(b.data.createdAt)) return -1;
+      else if (new Date(a.data.createdAt) == new Date(b.data.createdAt))
+        return 0;
+      else return 1;
+    });
     client.set("foreversPosts", JSON.stringify(posts));
     return posts;
   }
