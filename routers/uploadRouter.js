@@ -13,25 +13,25 @@ const fs = require("fs");
 const uploadRouter = express.Router();
 uploadRouter.use(fileUpload());
 
-async function updateCodes(fileName) {
+async function updateCodes(codes_arr) {
   let prevCodes = [];
   const codesSnap = await getDoc(doc(db, "cached", "grc"));
   if (codesSnap.exists()) {
     prevCodes = codesSnap.data().codes;
   }
 
-  fs.readFile(`${__dirname}/../uploads/${fileName}`, "utf8", (err, data) => {
-    if (err) {
-      console.log("Err", err);
-      return;
-    }
-    const codes_arr = data.split("\r\n").filter((code) => code != "");
-    const codes = codes_arr.map((code) => {
-      return { code, status: "unused", createdAt: new Date().toDateString() };
-    });
-    const newCodes = [...prevCodes, ...codes];
-    uploadToDB(newCodes);
+  // fs.readFile(`${__dirname}/../uploads/${fileName}`, "utf8", (err, data) => {
+  //   if (err) {
+  //     console.log("Err", err);
+  //     return;
+  //   }
+  // const codes_arr = content.split("\r\n").filter((code) => code != "");
+  const codes = codes_arr.map((code) => {
+    return { code, status: "unused", createdAt: new Date().toDateString() };
   });
+  const newCodes = [...prevCodes, ...codes];
+  uploadToDB(newCodes);
+  // });
 }
 const uploadToDB = async (codes) => {
   const targetDocument = { codes };
@@ -54,18 +54,10 @@ async function cleanCodes() {
   }
 }
 uploadRouter.post("/", async (req, res) => {
-  if (!req.files.file) {
-    res.status(500).json({ status: "error" });
+  if (req.body.codes && req.body.codes.length > 0) {
+    updateCodes(req.body.codes);
   }
-  const file = req.files.file;
-  file.mv(`${__dirname}/../uploads/${file.name}`, (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({ status: "error" });
-    }
-    updateCodes(file.name);
-  });
-  res.json({ status: "success" });
+  return res.json({ status: "success" });
 });
 uploadRouter.get("/", async (req, res) => {
   const snapshot = await getDoc(doc(db, "cached", "grc"));
