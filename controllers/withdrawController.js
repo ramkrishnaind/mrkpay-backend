@@ -48,7 +48,7 @@ async function withdraw(req, res) {
       let codes = codesSnap.data().codes;
       let redeemCodesAmount = inrBalance / 10;
       let redeemCodes = [];
-      const codeFound = 0;
+      let codeFound = 0;
       for (let i = 0; i < codes.length; i++) {
         if (redeemCodes.length < redeemCodesAmount) {
           if (codes[i].status == "unused") {
