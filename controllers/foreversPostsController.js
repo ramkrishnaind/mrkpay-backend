@@ -51,7 +51,7 @@ async function fetchPosts() {
     const posts = snapshot.docs.map((doc) => {
       return { data: doc.data(), id: doc.id };
     });
-    posts.data.sort((a, b) => {
+    posts?.sort((a, b) => {
       return (
         new Date(b.data.createdAt).getTime() -
         new Date(a.data.createdAt).getTime()
