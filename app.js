@@ -12,7 +12,12 @@ const usersRouter = require("./routers/usersRouter");
 const adminRouter = require("./routers/adminRouter");
 const uploadRouter = require("./routers/uploadRouter");
 const withdrawRouter = require("./routers/withdrawRouter");
-app.use(cors());
+// app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(express.json());
 app.use(helmet());
 app.use(compression());
