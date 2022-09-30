@@ -1,5 +1,5 @@
 const redis = require("redis");
-// const client = redis.createClient();
+ const client = redis.createClient();
 const Redis = require("ioredis");
 // const client = redis.createClient(6379, "3.85.164.141");
 // client.connect();
