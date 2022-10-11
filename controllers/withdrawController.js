@@ -36,7 +36,7 @@ async function withdraw(req, res) {
     if (user.coinsGenerated < amount) {
       return res.json({ status: "error", message: "Insufficient balance" });
     }
-    const inrBalance = amount * 0.2;
+    const inrBalance = amount * 0.05;
     // Update user balance
     const newBalance = user.coinsGenerated - amount;
     let newUser = { ...user, coinsGenerated: newBalance };
