@@ -33,6 +33,12 @@ async function withdraw(req, res) {
   if (userSnap.exists()) {
     console.log("Step 2");
     const user = userSnap.data();
+    if (amount < 200) {
+      return res.json({
+        status: "error",
+        message: "Require minimum balance to redeem",
+      });
+    }
     if (user.coinsGenerated < amount) {
       return res.json({ status: "error", message: "Insufficient balance" });
     }
