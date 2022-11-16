@@ -1,5 +1,3 @@
-userController.js;
-
 const {
   doc,
   getDoc,
@@ -97,5 +95,24 @@ async function getAllUsers(req, res) {
   });
   res.json({ status: "success", data: users });
 }
+async function resetCoinsGenerated(req, res) {
+  debugger;
+  const snapshot = await getDocs(collection(db, "users"));
+  snapshot.docs.forEach(async function (doc, index) {
+    await setDoc(doc.ref, {
+      coinsGenerated: 0,
+      redeemRequests: [],
+    });
+    if (index === snapshot.docs.length - 1) {
+      return res.json({ status: "success" });
+    }
+  });
+}
 
-module.exports = { addUser, getUserById, getAllUsers, addGeneratedCoin };
+module.exports = {
+  addUser,
+  getUserById,
+  getAllUsers,
+  addGeneratedCoin,
+  resetCoinsGenerated,
+};

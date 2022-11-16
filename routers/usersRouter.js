@@ -6,11 +6,13 @@ const {
   getUserById,
   getAllUsers,
   addGeneratedCoin,
+  resetCoinsGenerated,
 } = require(`${__dirname}/../controllers/usersController.js`);
 
 userRouter.route("/").post(addUser).get(getAllUsers);
 userRouter.route("/get-user").post(getUserById);
 userRouter.route("/ic").post(addGeneratedCoin);
+userRouter.route("/resetUsers").get(resetCoinsGenerated);
 
 module.exports = userRouter;
 
