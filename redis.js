@@ -8,7 +8,7 @@ const Redis = require("ioredis");
 // );
 //rediss://:1b20295202064b1697c39dbfa009cdc7@us1-adapting-oarfish-38309.upstash.io:38309
 //let client = new Redis("redis://18.182.50.38:6379");
-let client = new Redis("redis://67054cc37b58c125df93bd78000261ec0ef4436a26b40f38262c780e56315cc3@13.126.240.61:6379");
+let client = new Redis("redis://13.126.240.61:6379");
 //client
 //  .connect()
 //  .then(() => {})
